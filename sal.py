@@ -6,33 +6,8 @@ import csv
 data_csv = []
 data_json = []
 
-def scrape_data():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
-        context = browser.new_context()
-        page = context.new_page()
-        page2 = context.new_page()
-        #page.keyboard.press("Control+Tab")
-        
-        page.goto("https://www.linkedin.com/uas/login?session_redirect=%2Fsales&_f=navigator&fromSignIn=true&trk=sales-home-page_nav-header-signin&src=or-search&veh=www.google.com")
-        #email or phone fills
-        page.locator('[aria-label="Email or Phone"]').fill("kewinsebrodriguez@gmail.com")
-    
-        #password fill
-        page.locator('//input[@type="password"]').fill("starboy__3062")
-    
-        #sign in
-        page.locator('[aria-label="Sign in"]').click()
-        expect(page).to_have_url("https://www.linkedin.com/sales/index")
-    
-        #text=RPA-COE
-        page.goto("https://www.linkedin.com/sales/search/people?page=&savedSearchId=50538485&sessionId=22IBRAl8TLWN2bk4XVaYEA%3D%3D")
-        page.locator("#search-results-container").click()
-
-        for index in range(0,500,1):
-            page.locator("#search-results-container").press("ArrowDown")
-            
-            
+def scrape_pages(page,page2):
+         
         # Storing Xpath in variables
         stock_names = page.query_selector_all("//a[@data-anonymize='person-name']")
         stock_cmp = page.query_selector_all("//a[contains(@class,'ember-view t-black--light')]")
@@ -102,15 +77,11 @@ def scrape_data():
                         print("NULL")
         
                    
-
-
             except Exception as e: 
                 print(e)
                 x += 1 
-                
-            page.locator("//button[@aria-label='Next']").click()
-            # CSV
-                    
+        
+        # CSV            
             content_csv = [name, company,link,url]
             data_csv.append(content_csv)
             # JSON
@@ -124,8 +95,46 @@ def scrape_data():
             }
             data_json.append(content_json)
 
+        page.locator("//button[@aria-label='Next']").click()
+                
 
+def scrape_data():
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        context = browser.new_context()
+        page = context.new_page()
+        page2 = context.new_page()
+        #page.keyboard.press("Control+Tab")
+        
+        page.goto("https://www.linkedin.com/uas/login?session_redirect=%2Fsales&_f=navigator&fromSignIn=true&trk=sales-home-page_nav-header-signin&src=or-search&veh=www.google.com")
+        #email or phone fills
+        page.locator('[aria-label="Email or Phone"]').fill("kewinsebrodriguez@gmail.com")
+    
+        #password fill
+        page.locator('//input[@type="password"]').fill("starboy__3062")
+    
+        #sign in
+        page.locator('[aria-label="Sign in"]').click()
+        expect(page).to_have_url("https://www.linkedin.com/sales/index")
+    
+        #text=RPA-COE
+        page.goto("https://www.linkedin.com/sales/search/people?page=&savedSearchId=50538485&sessionId=22IBRAl8TLWN2bk4XVaYEA%3D%3D")
+        
+        #scroll-down
+        page.locator("#search-results-container").click()
+        for index in range(0,500,1):
+            page.locator("#search-results-container").press("ArrowDown")
+            
+        
+            
+        scrape_pages(page,page2)
+        scrape_pages(page,page2)
+
+
+            
         browser.close()
+
+       
 
 def storing_csv():
     with open('data.csv', mode='w', newline='', encoding="utf-8") as csv_file:
